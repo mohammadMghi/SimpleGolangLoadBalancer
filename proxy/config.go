@@ -27,6 +27,19 @@ type Nodes struct{
 	Up bool
 }
 
+func (n *Nodes) getUpState() bool{
+	n.syncRw.Lock()
+	isUp := n.Up
+	n.syncRw.Unlock()
+	return isUp
+}
+
+func (n *Nodes) setUpState(state bool){
+	n.syncRw.Lock()
+	n.Up = state
+	n.syncRw.Unlock()
+}
+
 func(c *Config) getConfig() Config{
 	var config Config
 	data , err := ioutil.ReadFile("./config.json")
@@ -35,7 +48,7 @@ func(c *Config) getConfig() Config{
 		log.Fatal(err.Error())
 	}
 
-	json.Unmarshal(data ,config)
+	json.Unmarshal(data ,&config)
 	return config
 	
 } 
