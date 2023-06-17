@@ -2,7 +2,7 @@
 This a Simple Golang loadBalancer
 
 ## What is Load Blancer?
-Load Balancer is a type of reverse proxy that balance request got from client then handlers that with the servers.
+Load Balancer is a type of reverse proxy that balance incomming request with the servers.
 
 Proxy is type of software sit on the front of backend to do some proccess on the incomming request and distributed between servers to achieve better performance.
 
