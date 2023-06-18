@@ -1,42 +1,50 @@
 package proxy
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
-	"net/http/httputil"
+ 
 	"net/url"
 	"time"
-
-	"golang.org/x/tools/go/pointer"
 )
+ 
 
-func Server(){
+ 
 
-	d := func(requst *http.Request){
-		requst.URL.Scheme ="http"
-		requst.URL.Host =":8081"
+func Server(blancerType string){
+	var config  = NewConfig()
+	var serve http.Server
+    data, err := ioutil.ReadFile("./config.json")
+    if err != nil {
+        log.Fatal(err.Error())
+    }
+	cw := NewCountWacher()
+    json.Unmarshal(data, &config)
+
+    go helthChecker()
+
+
+	switch blancerType{
+		case "roundRobin":
+			serve  = http.Server{
+				Addr:    ":" + config.Proxy.Port,
+				Handler: http.HandlerFunc(roundRobinHandler),
+			}
+		case "LeastConnection:":
+			serve  = http.Server{
+				Addr:    ":" + config.Proxy.Port,
+			 
+				ConnState: cw.OnStateChange,
+			}
 	}
-
-	revProxy := &httputil.ReverseProxy{
-		Director: d,
-	}
-	
-	go helthChecker()
-
-	ser := http.Server{
-		Addr: ":8080",
-		Handler : revProxy,
-	}
-
-
-
-	err := ser.ListenAndServe()
-
-	if err != nil{
-		log.Fatal(err.Error())
-	}
+ 
+    if err = serve.ListenAndServe(); err != nil {
+        log.Fatal(err.Error())
+    }
 	
 
 }
