@@ -22,7 +22,7 @@ func Server(blancerType string){
     if err != nil {
         log.Fatal(err.Error())
     }
-	cw := NewCountWacher()
+	cw := NewConfig()
     json.Unmarshal(data, &config)
 
     go helthChecker()
