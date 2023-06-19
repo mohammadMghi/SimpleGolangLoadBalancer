@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"sort"
 	"sync"
 	"sync/atomic"
 )
@@ -36,23 +37,17 @@ func (cw *ConnectionWatcher) Add(c int64) {
     atomic.AddInt64(&cw.number, c)
 }
 
-
+ 
 //any request call this func and this func checks which server is least connection and send request to it
 var detectedLowestConnectionsURL string
-var detectedLowestConnectionsMap = make(map[string]int)
+var detectedLowestConnectionsMap = make(map[int]string)
+var lowServer = make(map[int]string)
 func (cw *ConnectionWatcher)leastHandler(w http.ResponseWriter , r *http.Request){
   
 	config := NewConfig()
 	nodes := config.getConfig().Nodes
-	cNode := &config.getConfig().Nodes[index]
-
+  
  
- 
-
-	
-
-	 
-	
 	//loop on the list config and checks every request for find least
 	for _ , server := range nodes{
 	
@@ -61,36 +56,37 @@ func (cw *ConnectionWatcher)leastHandler(w http.ResponseWriter , r *http.Request
 			ConnState: cw.OnStateChange,
 		 }
 		 cw.Count()
-		 detectedLowestConnectionsMap[server.URL] =   cw.Count() 
+		 detectedLowestConnectionsMap[ cw.Count() ] =  server.URL
 		 mu.Unlock()
 	
 	}
+ 
+ 
 
-	for i , detect :=range detectedLowestConnectionsMap{
-		if(detect > 1){
+	keys := make([]int, 0)
+    for k, _ := range detectedLowestConnectionsMap {
+        keys = append(keys, k)
+    }
+    sort.Ints(keys)
+    for _, k := range keys {
 
-		}
-		
 
+        detectedLowestConnectionsURL  =  detectedLowestConnectionsMap[k]
+        break
+    }
+
+ 
+ 
+  
+	url , e:=url.Parse(detectedLowestConnectionsURL)
+
+	if e != nil{
+		log.Fatal(e.Error())
 	}
 
-
-	revProxy := httputil.NewSingleHostReverseProxy(url.Parse(detectedLowestConnectionsURL))
+	revProxy := httputil.NewSingleHostReverseProxy(url)
 	
-
-
-
-	revProxy.ErrorHandler =  func(http.ResponseWriter,  *http.Request ,error){
-		cNode.Up = false
-	
-
-		 
-		 cw.lowHandler(w,r)
-	}
-
-	//checks which server is least conntions
-
-
+ 
 
 	revProxy.ServeHTTP(w,r)
 

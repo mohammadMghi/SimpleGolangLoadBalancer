@@ -22,7 +22,7 @@ func Server(blancerType string){
     if err != nil {
         log.Fatal(err.Error())
     }
-	cw := NewConfig()
+	cw := NewCountWacher()
     json.Unmarshal(data, &config)
 
     go helthChecker()
@@ -37,8 +37,7 @@ func Server(blancerType string){
 		case "LeastConnection:":
 			serve  = http.Server{
 				Addr:    ":" + config.Proxy.Port,
-			 
-				ConnState: cw.OnStateChange,
+				Handler: http.HandlerFunc(cw.leastHandler),
 			}
 	}
  
