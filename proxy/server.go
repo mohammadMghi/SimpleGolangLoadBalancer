@@ -31,27 +31,34 @@ func Server(blancerType string){
 
     go helthChecker()
 
-
-	switch blancerType{
-		case "roundRobin":
-			serve  = http.Server{
-				Addr:    ":" + config.Proxy.Port,
-				Handler: http.HandlerFunc(roundRobinHandler),
-			}
-		case "LeastConnection:":
-			serve  = http.Server{
-				Addr:    ":" + config.Proxy.Port,
-				Handler: http.HandlerFunc(cw.leastHandler),
-			}
+	if blancerType == "roundRobin"{
+		serve  = http.Server{
+			Addr:    ":" + config.Proxy.Port,
+			Handler: http.HandlerFunc(roundRobinHandler),
+		}
 	}
-	log.Print("Load balancer runing on port 8080...")
-    err = serve.ListenAndServe() 
+
+	if blancerType == "LeastConnection"{
+		serve  = http.Server{
+			Addr:    ":" + config.Proxy.Port,
+			Handler: http.HandlerFunc(cw.leastHandler),
+		}
+	}
+
  
+
+	log.Print("Load balancer runing on port " + config.Proxy.Port +"...")
+
+    err = serve.ListenAndServe() 
 
 
 	if err != nil {
+ 
         log.Fatal(err.Error())
     }
+
+
+
 	
 
 }

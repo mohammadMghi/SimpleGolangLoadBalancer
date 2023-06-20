@@ -50,11 +50,13 @@ func (cw *ConnectionWatcher)leastHandler(w http.ResponseWriter , r *http.Request
  
 	//loop on the list config and checks every request for find least
 	for _ , server := range nodes{
-	
+
 		mu.Lock()
 		_ = &http.Server{
 			ConnState: cw.OnStateChange,
+			Addr:  server.URL,
 		 }
+ 
 		 cw.Count()
 		 detectedLowestConnectionsMap[ cw.Count() ] =  server.URL
 		 mu.Unlock()
@@ -83,6 +85,7 @@ func (cw *ConnectionWatcher)leastHandler(w http.ResponseWriter , r *http.Request
 	if e != nil{
 		log.Fatal(e.Error())
 	}
+ 
 
 	revProxy := httputil.NewSingleHostReverseProxy(url)
 	
