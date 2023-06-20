@@ -40,7 +40,7 @@ func (n *Nodes) setUpState(state bool){
 	n.syncRw.Unlock()
 }
 
-func(c *Config) getConfig() Config{
+func(c *Config) GetConfig() Config{
 	var config Config
 	data , err := ioutil.ReadFile("./config.json")
 

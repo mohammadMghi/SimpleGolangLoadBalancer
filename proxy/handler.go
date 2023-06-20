@@ -45,7 +45,7 @@ var lowServer = make(map[int]string)
 func (cw *ConnectionWatcher)leastHandler(w http.ResponseWriter , r *http.Request){
   
 	config := NewConfig()
-	nodes := config.getConfig().Nodes
+	nodes := config.GetConfig().Nodes
   
  
 	//loop on the list config and checks every request for find least
@@ -99,8 +99,18 @@ var mu sync.Mutex
 var index = 0 
 func roundRobinHandler(w http.ResponseWriter , r *http.Request){
 	config := NewConfig()
-	nodes := config.getConfig().Nodes
-	cNode := &config.getConfig().Nodes[index]
+	nodes := config.GetConfig().Nodes
+	lenNodes := len(nodes)
+	if(index == lenNodes){
+		index = 0
+	}
+	cNode := &config.GetConfig().Nodes[index]
+
+ 
+	if(lenNodes == 0){
+		log.Fatal("Len of nodes is zero ... see config.json and add your servers")
+	}
+
 	mu.Lock()
 
 	url  , err:= url.Parse(nodes[index].URL) 
@@ -119,6 +129,7 @@ func roundRobinHandler(w http.ResponseWriter , r *http.Request){
 		//if faild then retry and call func again
 		roundRobinHandler(w ,r )
 	}
+ 
 	revProxy.ServeHTTP(w,r)
 
 

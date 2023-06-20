@@ -16,12 +16,16 @@ import (
  
 
 func Server(blancerType string){
+ 
 	var config  = NewConfig()
 	var serve http.Server
     data, err := ioutil.ReadFile("./config.json")
+
     if err != nil {
+
         log.Fatal(err.Error())
     }
+
 	cw := NewCountWacher()
     json.Unmarshal(data, &config)
 
@@ -40,8 +44,12 @@ func Server(blancerType string){
 				Handler: http.HandlerFunc(cw.leastHandler),
 			}
 	}
+	log.Print("Load balancer runing on port 8080...")
+    err = serve.ListenAndServe() 
  
-    if err = serve.ListenAndServe(); err != nil {
+
+
+	if err != nil {
         log.Fatal(err.Error())
     }
 	
@@ -58,19 +66,24 @@ func isUpService(url *url.URL) error{
 
 func helthChecker (){
 	time := time.NewTicker(time.Minute * 1)
-	nodes :=  NewConfig().Nodes
+	config :=  NewConfig() 
+	nodes := config.GetConfig()
+ 
 	for{
+	
 		select{
+	
 			case <-time.C:
-				for _ , node := range nodes {
+				for _ , node := range nodes.Nodes {
 					nnode := &node
+				
 					url, err := url.Parse(nnode.URL); if err != nil{
 						log.Fatal(err.Error())
 					} 
 					err = isUpService(url) ; if err != nil{
-						log.Fatal("node is down : %v :: %v" ,  err.Error() , nnode.URL )
+						log.Fatal("node is down :  " ,  err.Error() , nnode.URL )
 					}
-					fmt.Println("node is up ... %v"  , nnode.URL )
+					fmt.Println("node is up ...  "  , nnode.URL )
 
 
 				}
