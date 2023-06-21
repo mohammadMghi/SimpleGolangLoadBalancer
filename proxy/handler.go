@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"crypto/md5"
 	"log"
 	"net"
 	"net/http"
@@ -37,6 +38,24 @@ func (cw *ConnectionWatcher) Add(c int64) {
     atomic.AddInt64(&cw.number, c)
 }
 
+
+//Hash ip is why to routing incomming request and detemine which server should handle the request base on sessions and cookies
+func ipHashHandler(w http.ResponseWriter , r *http.Request){
+
+	ipAddress := r.RemoteAddr
+	 
+	//get user sessions and cookies to detemine which server should handle the request
+
+	ip, _, err := net.SplitHostPort(ipAddress)
+		if err != nil {
+			log.Fatal(err)
+			return
+		}
+	ipByte := []byte(ip)
+	_ = md5.Sum(ipByte)
+
+	//
+}
  
 //any request call this func and this func checks which server is least connection and send request to it
 var detectedLowestConnectionsURL string
