@@ -2,8 +2,12 @@ package proxy
 
 import (
 	"crypto/md5"
+	"math/rand"
+	"time"
+
 	"fmt"
 	"log"
+
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -43,6 +47,31 @@ func (cw *ConnectionWatcher) Add(c int64) {
 }
 
 
+func RondomSeverHandler(w http.ResponseWriter , r *http.Request){
+	  
+	config := NewConfig()
+	nodes := config.GetConfig().Nodes
+ 
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(len(nodes))
+
+	selectedNode := nodes[randomIndex]
+
+	url , e:=url.Parse(selectedNode.URL)
+
+	if e != nil{
+		log.Fatal(e.Error())
+	}
+ 
+
+	revProxy := httputil.NewSingleHostReverseProxy(url)
+	
+ 
+
+	revProxy.ServeHTTP(w,r)
+
+}
+
 //Hash ip is why to routing incomming request and detemine which server should handle the request base on sessions and cookies
 func ipHashHandler(w http.ResponseWriter , r *http.Request){
 
@@ -56,7 +85,8 @@ func ipHashHandler(w http.ResponseWriter , r *http.Request){
 	//determine which parameters you need to check for pass incoming request to appropriate server
 	//here...
 	//for example ... 
-   // Retrieve data from cache
+    // Retrieve data from cache
+   	//get user sessions and cookies to detemine which server should handle the request
    result, err := client.Get(r.Context(),"key").Result()
    if err == redis.Nil {
 	   fmt.Println("Key does not exist")
@@ -69,7 +99,7 @@ func ipHashHandler(w http.ResponseWriter , r *http.Request){
 
 	ipAddress := r.RemoteAddr
 	 
-	//get user sessions and cookies to detemine which server should handle the request
+
 
 	ip, _, err := net.SplitHostPort(ipAddress)
 		if err != nil {
