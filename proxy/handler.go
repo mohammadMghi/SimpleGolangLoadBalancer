@@ -57,7 +57,7 @@ func ipHashHandler(w http.ResponseWriter , r *http.Request){
 	//here...
 	//for example ... 
    // Retrieve data from cache
-   result, err := client.Get("key").Result()
+   result, err := client.Get(r.Context(),"key").Result()
    if err == redis.Nil {
 	   fmt.Println("Key does not exist")
    } else if err != nil {
