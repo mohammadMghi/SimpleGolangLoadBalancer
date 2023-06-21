@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"crypto/md5"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
@@ -55,7 +56,15 @@ func ipHashHandler(w http.ResponseWriter , r *http.Request){
 	//determine which parameters you need to check for pass incoming request to appropriate server
 	//here...
 	//for example ... 
-	_ = client.Get( r.Context(), "key").Err()
+   // Retrieve data from cache
+   result, err := client.Get("key").Result()
+   if err == redis.Nil {
+	   fmt.Println("Key does not exist")
+   } else if err != nil {
+	   panic(err)
+   } else {
+	   fmt.Println("Value:", result)
+   }
  
 
 	ipAddress := r.RemoteAddr
