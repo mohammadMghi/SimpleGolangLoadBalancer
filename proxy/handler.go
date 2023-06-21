@@ -10,6 +10,9 @@ import (
 	"sort"
 	"sync"
 	"sync/atomic"
+
+	"github.com/redis/go-redis/v9"
+	"google.golang.org/genproto/googleapis/cloud/redis/v1"
 )
 
 
@@ -41,6 +44,19 @@ func (cw *ConnectionWatcher) Add(c int64) {
 
 //Hash ip is why to routing incomming request and detemine which server should handle the request base on sessions and cookies
 func ipHashHandler(w http.ResponseWriter , r *http.Request){
+
+	 // Connect to Redis cache
+	 client := redis.NewClient(&redis.Options{
+        Addr:     "localhost:6379",
+        Password: "", // Provide password if required
+        DB:       0,  // Select the appropriate database number
+    })
+
+	//determine which parameters you need to check for pass incoming request to appropriate server
+	//here...
+	//for example ... 
+	_ = client.Get( r.Context(), "key").Err()
+ 
 
 	ipAddress := r.RemoteAddr
 	 
